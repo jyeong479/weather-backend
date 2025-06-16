@@ -1,12 +1,17 @@
 package com.example.iWishTheyWereAllDead.service;
 
+import com.example.iWishTheyWereAllDead.dto.WeatherResponseDto;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class WeatherApiService {
@@ -14,103 +19,122 @@ public class WeatherApiService {
     @Value("${WEATHER_API_SERVICE_KEY}")
     private String serviceKey;
 
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+    public WeatherApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = new ObjectMapper();
+    }
+
     // 초단기 실황 조회
-    public String getUltraSrtNcst(String baseDate, String baseTime, String nx, String ny) throws IOException {
-        String urlBuilder = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst" + "?" +
-                URLEncoder.encode("serviceKey", "UTF-8") + "=" + serviceKey +
-                "&" + URLEncoder.encode("pageNo", "UTF-8") + "=1" +
-                "&" + URLEncoder.encode("numOfRows", "UTF-8") + "=1000" +
-                "&" + URLEncoder.encode("dataType", "UTF-8") + "=JSON" +
-                "&" + URLEncoder.encode("base_date", "UTF-8") + "=" + baseDate +
-                "&" + URLEncoder.encode("base_time", "UTF-8") + "=" + baseTime +
-                "&" + URLEncoder.encode("nx", "UTF-8") + "=" + nx +
-                "&" + URLEncoder.encode("ny", "UTF-8") + "=" + ny;
+    public List<WeatherResponseDto> getUltraSrtNcst(String baseDate, String baseTime, String nx, String ny) {
+        URI uri = UriComponentsBuilder.fromHttpUrl("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1000)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .build(true)
+                .toUri();
 
-        URL url = new URL(urlBuilder);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        BufferedReader rd;
+        String response = restTemplate.getForObject(uri, String.class);
 
-        if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        List<WeatherResponseDto> result = new ArrayList<>();
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode items = root.path("response").path("body").path("items").path("item");
+
+            if (items.isArray()) {
+                for (JsonNode item : items) {
+                    String category = item.path("category").asText();
+                    String value = item.path("obsrValue").asText();
+                    result.add(new WeatherResponseDto(category, value));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        return sb.toString();
+        return result;
     }
 
     // 초단기예보
-    public String getUltraSrtFcst(String baseDate, String baseTime, String nx, String ny) throws IOException {
-        String urlBuilder = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst" + "?" +
-                URLEncoder.encode("serviceKey", "UTF-8") + "=" + serviceKey +
-                "&" + URLEncoder.encode("pageNo", "UTF-8") + "=1" +
-                "&" + URLEncoder.encode("numOfRows", "UTF-8") + "=1000" +
-                "&" + URLEncoder.encode("dataType", "UTF-8") + "=JSON" +
-                "&" + URLEncoder.encode("base_date", "UTF-8") + "=" + baseDate +
-                "&" + URLEncoder.encode("base_time", "UTF-8") + "=" + baseTime +
-                "&" + URLEncoder.encode("nx", "UTF-8") + "=" + nx +
-                "&" + URLEncoder.encode("ny", "UTF-8") + "=" + ny;
+    public List<WeatherResponseDto> getUltraSrtFcst(String baseDate, String baseTime, String nx, String ny) {
+        URI uri = UriComponentsBuilder.fromHttpUrl("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1000)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .build(true)
+                .toUri();
 
-        URL url = new URL(urlBuilder);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        BufferedReader rd;
+        String response = restTemplate.getForObject(uri, String.class);
 
-        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        List<WeatherResponseDto> result = new ArrayList<>();
+
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode items = root.path("response").path("body").path("items").path("item");
+
+            if (items.isArray()) {
+                for (JsonNode item : items) {
+                    String category = item.path("category").asText();
+                    String fcstDate = item.path("fcstDate").asText();
+                    String fcstTime = item.path("fcstTime").asText();
+                    String value = item.path("fcstValue").asText();
+                    result.add(new WeatherResponseDto(category, fcstDate, fcstTime, value));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        return sb.toString();
+
+        return result;
     }
 
     // 단기예보
-    public String getVilageFcst(String baseDate, String baseTime, String nx, String ny) throws IOException {
-        String urlBuilder = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst" + "?" +
-                URLEncoder.encode("serviceKey","UTF-8") + "=" + serviceKey +
-                "&" + URLEncoder.encode("pageNo","UTF-8") + "=1" +
-                "&" + URLEncoder.encode("numOfRows","UTF-8") + "=1000" +
-                "&" + URLEncoder.encode("dataType","UTF-8") + "=JSON" +
-                "&" + URLEncoder.encode("base_date","UTF-8") + "=" + baseDate +
-                "&" + URLEncoder.encode("base_time","UTF-8") + "=" + baseTime +
-                "&" + URLEncoder.encode("nx","UTF-8") + "=" + nx +
-                "&" + URLEncoder.encode("ny","UTF-8") + "=" + ny;
+    public List<WeatherResponseDto> getVilageFcst(String baseDate, String baseTime, String nx, String ny) {
+        URI uri = UriComponentsBuilder.fromHttpUrl("http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst")
+                .queryParam("serviceKey", serviceKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1000)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .build(true)
+                .toUri();
 
-        URL url = new URL(urlBuilder);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-type", "application/json");
-        BufferedReader rd;
+        String response = restTemplate.getForObject(uri, String.class);
 
-        if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
-            rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } else {
-            rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+        List<WeatherResponseDto> result = new ArrayList<>();
+
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode items = root.path("response").path("body").path("items").path("item");
+
+            if (items.isArray()) {
+                for (JsonNode item : items) {
+                    String category = item.path("category").asText();
+                    String fcstDate = item.path("fcstDate").asText();
+                    String fcstTime = item.path("fcstTime").asText();
+                    String Value = item.path("fcstValue").asText();
+                    result.add(new WeatherResponseDto(category, fcstDate, fcstTime, Value));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            sb.append(line);
-        }
-        rd.close();
-        conn.disconnect();
-        return sb.toString();
+
+        return result;
     }
 }

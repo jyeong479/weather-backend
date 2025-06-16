@@ -1,5 +1,6 @@
 package com.example.iWishTheyWereAllDead.service;
 
+import com.example.iWishTheyWereAllDead.dto.WeatherResponseDto;
 import com.example.iWishTheyWereAllDead.entity.WeatherEntity;
 import com.example.iWishTheyWereAllDead.repository.WeatherRepository;
 import com.example.iWishTheyWereAllDead.util.WeatherTimeUtil;
@@ -27,7 +28,7 @@ public class WeatherTotalService {
         return entityList.get(0);  // 가장 첫 번째 값 사용
     }
 
-    public String getUltraSrtNcstByCity(String city) throws IOException {
+    public List<WeatherResponseDto> getUltraSrtNcstByCity(String city) throws IOException {
         WeatherEntity entity = getFirstEntity(city);
 
         String nx = entity.getLongitude().toString();
@@ -39,7 +40,7 @@ public class WeatherTotalService {
         return weatherApiService.getUltraSrtNcst(baseDate, baseTime, nx, ny);
     }
 
-    public String getUltraSrtFcstByCity(String city) throws IOException {
+    public List<WeatherResponseDto> getUltraSrtFcstByCity(String city) throws IOException {
         WeatherEntity entity = getFirstEntity(city);
 
         String nx = entity.getLongitude().toString();
@@ -51,7 +52,7 @@ public class WeatherTotalService {
         return weatherApiService.getUltraSrtFcst(baseDate, baseTime, nx, ny);
     }
 
-    public String getVilageFcstByCity(String city) throws IOException {
+    public List<WeatherResponseDto> getVilageFcstByCity(String city) throws IOException {
         WeatherEntity entity = getFirstEntity(city);
 
         String nx = entity.getLongitude().toString();

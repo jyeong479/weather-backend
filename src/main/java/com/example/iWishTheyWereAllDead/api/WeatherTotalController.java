@@ -1,9 +1,15 @@
 package com.example.iWishTheyWereAllDead.api;
 
+import com.example.iWishTheyWereAllDead.dto.WeatherResponseDto;
 import com.example.iWishTheyWereAllDead.service.WeatherTotalService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 public class WeatherTotalController {
@@ -15,29 +21,33 @@ public class WeatherTotalController {
     }
 
     @GetMapping("/weather/by-city/ncst")
-    public String getUltraSrtNcstByCity(@RequestParam String city) {
+    public ResponseEntity<?> getUltraSrtNcstByCity(@RequestParam String city) {
         try {
-            return weatherTotalService.getUltraSrtNcstByCity(city);
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            List<WeatherResponseDto> result = weatherTotalService.getUltraSrtNcstByCity(city);
+            return ResponseEntity.ok(result);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터 요청 중 오류 발생");
         }
     }
 
+
     @GetMapping("/weather/by-city/ultra-forecast")
-    public String getUltraSrtFcstByCity(@RequestParam String city) {
+    public ResponseEntity<?> getUltraSrtFcstByCity(@RequestParam String city) {
         try {
-            return weatherTotalService.getUltraSrtFcstByCity(city);
+            List<WeatherResponseDto> result = weatherTotalService.getUltraSrtFcstByCity(city);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터 요청 중 오류 발생");
         }
     }
 
     @GetMapping("/weather/by-city/forecast")
-    public String getVilageFcstByCity(@RequestParam String city) {
+    public ResponseEntity<?> getVilageFcstByCity(@RequestParam String city) {
         try {
-            return weatherTotalService.getVilageFcstByCity(city);
+            List<WeatherResponseDto> result = weatherTotalService.getVilageFcstByCity(city);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("데이터 요청 중 오류 발생");
         }
     }
 }

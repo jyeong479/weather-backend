@@ -3,6 +3,7 @@ package com.example.iWishTheyWereAllDead.api;
 import com.example.iWishTheyWereAllDead.dto.WeatherResponseDto;
 import com.example.iWishTheyWereAllDead.service.WeatherTotalService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class WeatherTotalController {
 
     @Operation(summary = "초단기실황조회", description = "현재날씨 조회기능입니다")
     @GetMapping("/weather/by-city/ncst")
+    @SecurityRequirement(name = "jwtAuth")
     public ResponseEntity<?> getUltraSrtNcstByCity(@RequestParam String city) {
         try {
             List<WeatherResponseDto> result = weatherTotalService.getUltraSrtNcstByCity(city);
@@ -36,6 +38,7 @@ public class WeatherTotalController {
 
     @Operation(summary = "초단기예보", description = "초단기예보 조회기능입니다")
     @GetMapping("/weather/by-city/ultra-forecast")
+    @SecurityRequirement(name = "jwtAuth")
     public ResponseEntity<?> getUltraSrtFcstByCity(@RequestParam String city) {
         try {
             List<WeatherResponseDto> result = weatherTotalService.getUltraSrtFcstByCity(city);
@@ -47,6 +50,7 @@ public class WeatherTotalController {
 
     @Operation(summary = "단기예보", description = "단기예보 조회기능입니다")
     @GetMapping("/weather/by-city/forecast")
+    @SecurityRequirement(name = "jwtAuth")
     public ResponseEntity<?> getVilageFcstByCity(@RequestParam String city) {
         try {
             List<WeatherResponseDto> result = weatherTotalService.getVilageFcstByCity(city);

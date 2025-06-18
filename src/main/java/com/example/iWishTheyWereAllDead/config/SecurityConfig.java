@@ -49,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOriginPatterns(List.of("*"));  // 또는 특정 도메인만 명시
         configuration.setAllowedMethods(List.of("GET", "POST"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(List.of("*"));
@@ -58,4 +58,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }

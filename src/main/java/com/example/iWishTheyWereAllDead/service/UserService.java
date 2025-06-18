@@ -3,6 +3,7 @@ import com.example.iWishTheyWereAllDead.dto.LoginRequestDto;
 import com.example.iWishTheyWereAllDead.dto.LoginResponseDto;
 import com.example.iWishTheyWereAllDead.dto.SignUpRequestDto;
 import com.example.iWishTheyWereAllDead.entity.UserEntity;
+import com.example.iWishTheyWereAllDead.jwt.JwtTokenProvider;
 import com.example.iWishTheyWereAllDead.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,8 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     public List<UserEntity> readAll() {
         return userRepository.findAll();
@@ -29,6 +32,7 @@ public class UserService {
 
     public UserEntity create(SignUpRequestDto dto) {
         if (userRepository.existsById(dto.getEmail())) {
+            System.out.println("중복된 이메일: " + dto.getEmail());
             return null;
         }
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
@@ -38,10 +42,12 @@ public class UserService {
 
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         UserEntity userEntity = userRepository.findByEmail(loginRequestDto.getEmail());
-        if (userEntity == null || !passwordEncoder.matches(loginRequestDto.getPassword(), userEntity.getPassword())){
+        if (userEntity == null || !passwordEncoder.matches(loginRequestDto. getPassword(), userEntity.getPassword())){
             return null;
         }
 
-        return new LoginResponseDto(userEntity.getEmail());
+        String token = jwtTokenProvider.createToken(userEntity.getEmail());
+        log.info("발급된 토큰: {}", token);
+        return new LoginResponseDto(userEntity.getEmail(), token);
     }
 }

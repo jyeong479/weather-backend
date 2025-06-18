@@ -7,4 +7,5 @@ import lombok.Getter;
 @Getter
 public class LoginResponseDto {
     private String email;
+    private String token;
 }

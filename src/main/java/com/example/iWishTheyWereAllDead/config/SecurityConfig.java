@@ -36,7 +36,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/login", "/user/signup").permitAll() // 인증 없이 허용할 경로 /weather는 추후 제거
+                        .requestMatchers("/user/login", "/user/signup", "/user").permitAll() // 인증 없이 허용할 경로
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()               // 그 외 모든 요청은 인증 필요
                 )

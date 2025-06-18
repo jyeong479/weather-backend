@@ -29,7 +29,7 @@ public class OpenApiConfig {
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
                                 .in(SecurityScheme.In.HEADER)
-                                .description("JWT 토큰을 'Bearer {token}' 형식으로 입력해주세요."))
+                                .description("JWT 토큰을 입력해주세요."))
                 );
     }
 }
